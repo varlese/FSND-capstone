@@ -45,8 +45,8 @@ migrate = Migrate(app, db)
 
 # Creating the debatase for Actors
 
-class Actors(db.Model):
-    __tablename__ = 'Actors'
+class Actor(db.Model):
+    __tablename__ = 'Actor'
 
     id = db.Column(db.Integer, primary_key = True)
     name = db.Column(db.String)
@@ -67,8 +67,8 @@ class Actors(db.Model):
 
 # Creating the database for Movies
 
-class Movies(db.Model):
-    __tablename__ = 'Movies'
+class Movie(db.Model):
+    __tablename__ = 'Movie'
 
     id = db.Column(db.Integer, primary_key = True)
     title = db.Column(db.String)

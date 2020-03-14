@@ -1,15 +1,9 @@
 #----------------------------------------------------------------------------#
-# Imports
-#----------------------------------------------------------------------------#
-
-import os
-from flask import Flask, request, abort, jsonify
-from flask_sqlalchemy import SQLAlchemy
-from flask_cors import CORS
-
-#----------------------------------------------------------------------------#
 # Config.
 #----------------------------------------------------------------------------#
+
+from flask import Flask, request, abort, jsonify
+from flask_cors import CORS
 
 def create_app(test_config=None):
   # create and configure the app
@@ -18,7 +12,16 @@ def create_app(test_config=None):
 
   return app
 
-APP = create_app()
+app = create_app()
+
+#----------------------------------------------------------------------------#
+# Imports
+#----------------------------------------------------------------------------#
+
+import os
+from flask_sqlalchemy import SQLAlchemy
+from .models import Actor, Movie, db
+from .auth.auth import AuthError, requires_auth, get_token_auth_header
 
 ## ---------------------------------------------------------
 ## ROUTES

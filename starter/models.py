@@ -5,7 +5,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_moment import Moment
-from app import app
+from .app import app
 
 #----------------------------------------------------------------------------#
 # App Config.

@@ -1,9 +1,16 @@
 #----------------------------------------------------------------------------#
-# Config.
+# Imports
 #----------------------------------------------------------------------------#
 
+import os
 from flask import Flask, request, abort, jsonify
 from flask_cors import CORS
+from .models import Actor, Movie, setup_db
+from .auth.auth import AuthError, requires_auth, get_token_auth_header
+
+#----------------------------------------------------------------------------#
+# Config.
+#----------------------------------------------------------------------------#
 
 def create_app(test_config=None):
   # create and configure the app
@@ -14,14 +21,7 @@ def create_app(test_config=None):
 
 app = create_app()
 
-#----------------------------------------------------------------------------#
-# Imports
-#----------------------------------------------------------------------------#
-
-import os
-from flask_sqlalchemy import SQLAlchemy
-from .models import Actor, Movie, db
-from .auth.auth import AuthError, requires_auth, get_token_auth_header
+setup_db(app)
 
 ## ---------------------------------------------------------
 ## ROUTES
@@ -38,7 +38,7 @@ def get_actors():
 
     return jsonify({
         'success': True,
-        'actors': [actor for actor in actors]
+        'actors': [actor.format() for actor in actors]
     }), 200
 
 # GET endpoint for list of movies in database.
@@ -51,7 +51,7 @@ def get_movies():
 
     return jsonify({
         'success': True,
-        'movies': [movie for movie in movies]
+        'movies': [movie.format() for movie in movies]
     }), 200
 
 # POST endpoint to add an actor to the database.

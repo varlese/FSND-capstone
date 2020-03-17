@@ -64,15 +64,31 @@ class Actor(db.Model):
 	gender = db.Column(db.String)
 
 	def __repr__(self):
-	  return f"<Actor id='{self.id}' name='{self.name}'>"
+		return f"<Actor id='{self.id}' name='{self.name}'>"
+
+	def __init__(self, name, age, gender):
+		self.name = name
+		self.age = age
+		self.gender = gender
+
+	def insert(self):
+		db.session.add(self)
+		db.session.commit()
+	
+	def update(self):
+		db.session.commit()
+
+	def delete(self):
+		db.session.delete(self)
+		db.session.commit()
 
 	def format(self):
-	  return {
+		return {
 		'id': self.id,
 		'name': self.name,
 		'age': self.age,
 		'gender': self.gender
-	  }
+		}
 
 # Creating the database for Movies
 
@@ -84,11 +100,22 @@ class Movie(db.Model):
 	release = db.Column(db.String)
 
 	def __repr__(self):
-	  return f"<Movie id='{self.id}' title='{self.title}'>"
+		return f"<Movie id='{self.id}' title='{self.title}'>"
+
+	def insert(self):
+		db.session.add(self)
+		db.session.commit()
+	
+	def update(self):
+		db.session.commit()
+
+	def delete(self):
+		db.session.delete(self)
+		db.session.commit()
 
 	def format(self):
-	  return {
+		return {
 		'id': self.id,
 		'title': self.title,
 		'release': self.release,
-	  }
+		}

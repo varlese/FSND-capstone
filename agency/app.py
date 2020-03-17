@@ -2,14 +2,14 @@
 # Imports
 #----------------------------------------------------------------------------#
 
-import os
+import click, json, os, unittest
 from flask import Flask, request, abort, jsonify
 from flask_cors import CORS
 from .models import Actor, Movie, setup_db
 from .auth.auth import AuthError, requires_auth, get_token_auth_header
 
 #----------------------------------------------------------------------------#
-# Config.
+# Config
 #----------------------------------------------------------------------------#
 
 def create_app(test_config=None):
@@ -24,10 +24,9 @@ app = create_app()
 setup_db(app)
 
 ## ---------------------------------------------------------
-## ROUTES
+## Routes
 ## ---------------------------------------------------------
 
-# TODO: Create formatting for actors and movies.
 # GET endpoint for list of actors in database.
 @app.route('/actors', methods=['GET'])
 def get_actors():
@@ -237,9 +236,8 @@ def auth_error(error):
     }), error.status_code
 
 #----------------------------------------------------------------------------#
-# Launch.
+# Launch
 #----------------------------------------------------------------------------#
 
 if __name__ == '__main__':
-    APP.run(host='0.0.0.0', port=8080, debug=True)
-
+    app.run(host='0.0.0.0', port=8080, debug=True)

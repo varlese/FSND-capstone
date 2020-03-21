@@ -10,7 +10,7 @@ from urllib.request import urlopen
 
 AUTH0_DOMAIN = 'dev-j30osbgf.auth0.com'
 ALGORITHMS = ['RS256']
-API_AUDIENCE = 'dev'
+API_AUDIENCE = 'agency_dev'
 JWKS_URL = f'https://{AUTH0_DOMAIN}/.well-known/jwks.json'
 
 # Gets JSON data from URL
@@ -72,6 +72,7 @@ def get_token_auth_header():
 # For more: verify_decode_jwt()
 # Accepts: permission (string) and payload (dictionary).
 def check_permissions(permission, payload):
+    print(payload)
     if 'permissions' not in payload:
         raise AuthError({
             'code': 'invalid_payload',

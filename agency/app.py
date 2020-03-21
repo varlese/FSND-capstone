@@ -6,7 +6,7 @@ import click, json, os, unittest
 from flask import Flask, request, abort, jsonify
 from flask_cors import CORS
 from .models import Actor, Movie, setup_db
-from .auth.auth import AuthError, requires_auth, get_token_auth_header
+from .auth.auth import *
 
 #----------------------------------------------------------------------------#
 # Config
@@ -65,9 +65,8 @@ def create_app(test_config=None):
 		}), 200
 
 	# POST endpoint to add an actor to the database.
-	# TODO: Permissions (Casting Director)
 	@app.route('/add-actor', methods=['POST'])
-	#@requires_auth('post:actors')
+	@requires_auth('post:actors')
 	def add_actor():
 		data = request.get_json()
 
@@ -87,9 +86,8 @@ def create_app(test_config=None):
 		}), 200
 
 	# POST endpoint to add a movie to the database.
-	# TODO: Permissions (Executive Producer)
 	@app.route('/add-movie', methods=['POST'])
-	#@requires_auth('post:movies')
+	@requires_auth('post:movies')
 	def add_movie():
 		data = request.get_json()
 
@@ -107,9 +105,8 @@ def create_app(test_config=None):
 		}), 200
 
 	# PATCH endpoint to update an actor in the database.
-	# TODO: Permissions (Casting Director)
 	@app.route('/actors/<int:actor_id>', methods=['PATCH'])
-	#@requires_auth('patch:actor')
+	@requires_auth('patch:actor')
 	def update_actor(actor_id):
 		if not actor_id:
 			abort(404)
@@ -137,9 +134,8 @@ def create_app(test_config=None):
 		}), 200
 
 	# PATCH endpoint to update a movie in the database.
-	# TODO: Permissions (Casting Director)
 	@app.route('/movies/<int:movie_id>', methods=['PATCH'])
-	#@requires_auth('patch:actor')
+	@requires_auth('patch:movie')
 	def update_movie(movie_id):
 		if not movie_id:
 			abort(404)
@@ -164,9 +160,8 @@ def create_app(test_config=None):
 		}), 200
 
 	# DELETE endpoint to delete actors in the database.
-	# TODO: Permissions (Casting Director)
 	@app.route('/actors/<int:actor_id>', methods=['DELETE'])
-	#@requires_auth('delete:actor')
+	@requires_auth('delete:actor')
 	def delete_actor(actor_id):
 		if not actor_id:
 			abort(404)
@@ -183,9 +178,8 @@ def create_app(test_config=None):
 		}), 200
 
 	# DELETE endpoint to delete movies in the database.
-	# TODO: Permissions (Executive Producer)
 	@app.route('/movies/<int:movie_id>', methods=['DELETE'])
-	#@requires_auth('delete:movie')
+	@requires_auth('delete:movie')
 	def delete_movie(movie_id):
 		if not movie_id:
 			abort(404)

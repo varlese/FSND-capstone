@@ -102,6 +102,10 @@ class Movie(db.Model):
 	def __repr__(self):
 		return f"<Movie id='{self.id}' title='{self.title}'>"
 
+	def __init__(self, title, release):
+		self.title = title
+		self.release = release
+
 	def insert(self):
 		db.session.add(self)
 		db.session.commit()

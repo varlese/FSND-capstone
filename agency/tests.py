@@ -3,6 +3,7 @@
 #----------------------------------------------------------------------------#
 
 import json, os, unittest
+from flask import url_for
 from flask_sqlalchemy import SQLAlchemy
 from .app import create_app
 from .models import setup_db, Actor, Movie
@@ -40,7 +41,6 @@ class AgencyTestCase(unittest.TestCase):
 		actor.insert()
 
 		res = self.client().get('/actors')
-		print(res)
 		data = json.loads(res.data)
 
 		self.assertEqual(res.status_code, 200)
@@ -53,218 +53,193 @@ class AgencyTestCase(unittest.TestCase):
 		res = self.client().post('/actors')
 		self.assertEqual(res.status_code, 405)
 
-	# def test_should_get_first_page_questions(self):
-	#     res = self.client().get('/questions')
-	#     data = json.loads(res.data)
+	def test_should_return_all_movies(self):
+		# Insert dummy actor into database.
+		movie = Movie(title="Devil Wears Prada", release="June 30, 2006")
+		movie.insert()
 
-	#     self.assertEqual(res.status_code, 200)
-	#     self.assertTrue(data['success'])
-	#     # Makes sure the request is properly paginated.
-	#     self.assertEqual(len(data['questions']), QUESTIONS_PER_PAGE)
+		res = self.client().get('/movies')
+		data = json.loads(res.data)
 
-	#     questions = Question.query.all()
-	#     # Asserting that pagination worked.
-	#     self.assertEqual(data['total_questions'], len(questions))
+		self.assertEqual(res.status_code, 200)
+		self.assertTrue(data['success'])
 
-	# def test_should_allow_second_page_questions(self):
-	#     res = self.client().get('/questions/2')
-	#     data = json.loads(res.data)
+		movies = Movie.query.all()
+		self.assertEqual(len(data['movies']), len(movies))
 
-	#     self.assertEqual(res.status_code, 200)
-	#     self.assertTrue(data['success'])
+	def test_get_movies_dont_accept_post_request(self):
+		res = self.client().post('/movies')
+		self.assertEqual(res.status_code, 405)
 
-	#     questions = Question.query.all()
-	#     # Asserting that pagination worked.
-	#     self.assertEqual(data['total_questions'], len(questions))
+	def test_should_create_new_actor(self):
+		new_actor_data = {
+			'name': "New actor name worked.",
+			'age': "New actor age worked.",
+			'gender': "New actor gender worked."
+		} 
 
-	#     # Makes sure the request is properly paginated.
-	#     self.assertEqual(len(data['questions']), len(questions) - QUESTIONS_PER_PAGE)
+		res = self.client().post('/add-actor', data=json.dumps(new_actor_data), headers={'Content-Type': 'application/json'})
+		data = json.loads(res.data)
 
-	# def test_should_not_allow_third_page_questions(self):
-	#     res = self.client().get('/questions/3')
-	#     data = json.loads(res.data)
+		self.assertEqual(res.status_code, 200)
+		self.assertTrue(data['success'])
+		self.assertEqual(data['actor']['name'], new_actor_data['name'])
+		self.assertEqual(data['actor']['age'], new_actor_data['age'])
+		self.assertEqual(data['actor']['gender'], new_actor_data['gender'])
 
-	#     self.assertEqual(res.status_code, 404)
-	#     self.assertEqual(data['error'], 404)
-	#     self.assertFalse(data['success'])
+		actor_added = Actor.query.get(data['actor']['id'])
+		self.assertTrue(actor_added)
 
-	# def test_should_filter_questions_by_sports_category(self):
-	#     res = self.client().get('/categories/6/questions')
-	#     data = json.loads(res.data)
+	def test_should_not_allow_new_actor_missing_age(self):
+		new_actor_data = {
+			'name': "Testing a new actor with missing data.",
+			'gender': "male"
+		} 
 
-	#     self.assertEqual(res.status_code, 200)
-	#     self.assertTrue(data['success'])
+		res = self.client().post('/add-actor', data=json.dumps(new_actor_data), headers={'Content-Type': 'application/json'})
+		data = json.loads(res.data)
 
-	#     sports_questions = Question.query.filter_by(category=6).all()
-	#     self.assertEqual(data['total_questions'], len(sports_questions))
+		self.assertEqual(res.status_code, 422)
+		self.assertEqual(data['error'], 422)
+		self.assertFalse(data['success'])
 
-	# def test_should_not_return_second_page_of_sports_questions(self):
-	#     res = self.client().get('/categories/6/questions/2')
-	#     data = json.loads(res.data)
+	def test_should_create_new_movie(self):
+		new_movie_data = {
+			'title': "New movie title worked.",
+			'release': "New movie release date worked.",
+		}
 
-	#     self.assertEqual(res.status_code, 404)
-	#     self.assertEqual(data['error'], 404)
-	#     self.assertFalse(data['success'])
+		res = self.client().post('/add-movie', data=json.dumps(new_movie_data), headers={'Content-Type': 'application/json'})
+		data = json.loads(res.data)
 
-	# def test_should_delete_question_by_id(self):
-	#     question_id = 5
-	#     res = self.client().delete('/questions/' + str(question_id))
-	#     data = json.loads(res.data)
+		self.assertEqual(res.status_code, 200)
+		self.assertTrue(data['success'])
+		self.assertEqual(data['movie']['title'], new_movie_data['title'])
+		self.assertEqual(data['movie']['release'], new_movie_data['release'])
 
-	#     self.assertEqual(res.status_code, 200)
-	#     self.assertEqual(data['success'], True)
-	#     self.assertEqual(data['id'], question_id)
+		movie_added = Movie.query.get(data['movie']['id'])
+		self.assertTrue(movie_added)
 
-	# def test_should_return_not_found_when_question_id_doesnt_exist(self):
-	#     res = self.client().delete('/questions/1')
-	#     data = json.loads(res.data)
+	def test_should_not_allow_new_movie_missing_date(self):
+		new_movie_data = {
+			'title': "Testing a new movie with missing data."
+		} 
 
-	#     self.assertEqual(res.status_code, 404)
-	#     self.assertTrue(data['error'], 404)
-	#     self.assertFalse(data['success'])
+		res = self.client().post('/add-movie', data=json.dumps(new_movie_data), headers={'Content-Type': 'application/json'})
+		data = json.loads(res.data)
 
-	# def test_should_create_new_question(self):
-	#     new_question_data = {
-	#         'question': "Does the test create a new question?",
-	#         'answer': "Question is created.",
-	#         'category': 5,
-	#         'difficulty': 5
-	#     } 
+		self.assertEqual(res.status_code, 422)
+		self.assertEqual(data['error'], 422)
+		self.assertFalse(data['success'])
 
-	#     res = self.client().post('/questions', data=json.dumps(new_question_data), headers={'Content-Type': 'application/json'})
-	#     data = json.loads(res.data)
+	def test_should_update_existing_actor_data(self):
+		actor = Actor(name="Anne Hathaway", age="50", gender="female")
+		actor.insert()
 
-	#     self.assertEqual(res.status_code, 200)
-	#     self.assertTrue(data['success'])
-	#     self.assertEqual(data['question']['question'], new_question_data['question'])
-	#     self.assertEqual(data['question']['answer'], new_question_data['answer'])
-	#     self.assertEqual(data['question']['category'], new_question_data['category'])
-	#     self.assertEqual(data['question']['difficulty'], new_question_data['difficulty'])
+		actor_data_patch = {
+			'age': '37'
+		} 
 
-	#     question_added = Question.query.get(data['question']['id'])
-	#     self.assertTrue(question_added)
+		res = self.client().patch(
+			f'/actors/%s' % (actor.id),
+			data=json.dumps(actor_data_patch),
+			headers={'Content-Type': 'application/json'}
+		)
+		data = json.loads(res.data)
 
-	# def test_should_not_allow_new_question_missing_answer(self):
-	#     new_question_data = {
-	#         'question': "Does the test create a new question?",
-	#         'category': 5,
-	#         'difficulty': 5
-	#     } 
+		self.assertEqual(res.status_code, 200)
+		self.assertTrue(data['success'])
+		self.assertEqual(data['actor']['name'], actor.name)
+		self.assertEqual(data['actor']['age'], actor_data_patch['age'])
+		self.assertEqual(data['actor']['gender'], actor.gender)
 
-	#     res = self.client().post('/questions', data=json.dumps(new_question_data), headers={'Content-Type': 'application/json'})
-	#     data = json.loads(res.data)
+		actor_updated = Actor.query.get(data['actor']['id'])
+		self.assertEqual(actor_updated.id, actor.id)
 
-	#     self.assertEqual(res.status_code, 400)
-	#     self.assertEqual(data['error'], 400)
-	#     self.assertFalse(data['success'])
+	def test_should_not_update_existing_actor_if_not_found(self):
+		actor_data_patch = {
+			'age': '1'
+		} 
 
-	# def test_should_not_allow_new_question_with_invalid_difficulty(self):
-	#     new_question_data = {
-	#         'question': "Does the test create a new question?",
-	#         'answer': "Question is created.",
-	#         'category': 5,
-	#         'difficulty': 10
-	#     } 
+		res = self.client().patch('/actors/9999', data=json.dumps(actor_data_patch), headers={'Content-Type': 'application/json'})
+		data = json.loads(res.data)
 
-	#     res = self.client().post('/questions', data=json.dumps(new_question_data), headers={'Content-Type': 'application/json'})
-	#     data = json.loads(res.data)
+		self.assertEqual(res.status_code, 404)
+		self.assertEqual(data['error'], 404)
+		self.assertFalse(data['success'])
 
-	#     self.assertEqual(res.status_code, 422)
-	#     self.assertEqual(data['error'], 422)
-	#     self.assertFalse(data['success'])
+	def test_should_delete_existing_actor(self):
+		actor = Actor(name="Anne Hathaway", age="37", gender="female")
+		actor.insert()
 
-	# def test_should_return_valid_search_results(self):
-	#     search_term = 'royal'
-	#     search_json = {
-	#         'searchTerm': search_term
-	#     }
+		res = self.client().delete(f'/actors/%s' % actor.id)
+		data = json.loads(res.data)
 
-	#     res = self.client().post('/search', data=json.dumps(search_json), headers={'Content-Type': 'application/json'})
-	#     data = json.loads(res.data)
+		self.assertEqual(res.status_code, 200)
+		self.assertTrue(data['success'])
+		self.assertEqual(data['actor_id'], actor.id)
 
-	#     self.assertEqual(res.status_code, 200)
-	#     self.assertTrue(data['success'])
-		
-	#     search_data = Question.query.filter(Question.question.ilike('%' + search_term + '%')).all()
-	#     question_ids = []
-	#     for question in search_data:
-	#         question_ids.append(question.id)
-	#     self.assertEqual(len(search_data), data['totalQuestions'])
-	#     for question in data['questions']:
-	#         self.assertIn(question['id'], question_ids)
+	def test_should_not_delete_existing_actor_if_not_found(self):
+		res = self.client().delete('/actors/9999')
+		data = json.loads(res.data)
 
-	# def test_should_have_no_search_results(self):
-	#     search_term = 'Alaskdfhsoiewl'
-	#     search_json = {
-	#         'searchTerm': search_term
-	#     }
+		self.assertEqual(res.status_code, 404)
+		self.assertEqual(data['error'], 404)
+		self.assertFalse(data['success'])
 
-	#     res = self.client().post('/search', data=json.dumps(search_json), headers={'Content-Type': 'application/json'})
-	#     data = json.loads(res.data)
+	def test_should_update_existing_movie_data(self):
+		movie = Movie(title="Invisible Man", release="March 20, 1998")
+		movie.insert()
 
-	#     self.assertEqual(res.status_code, 404)
-	#     self.assertEqual(data['error'], 404)
-	#     self.assertFalse(data['success'])
-		
-	# def test_should_get_random_question_from_art(self):
-	#     quiz_category = 4
-	#     quizzes_request_data = {
-	#         "category": quiz_category
-	#     }
-	#     res = self.client().post('/quizzes', data=json.dumps(quizzes_request_data), headers={'Content-Type': 'application/json'})
-	#     data = json.loads(res.data)
+		movie_data_patch = {
+			'release': 'March 20, 2020'
+		} 
 
-	#     self.assertEqual(res.status_code, 200)
-	#     self.assertTrue(data['success'])
+		res = self.client().patch(
+			f'/movies/%s' % (movie.id),
+			data=json.dumps(movie_data_patch),
+			headers={'Content-Type': 'application/json'}
+		)
+		data = json.loads(res.data)
 
-	#     self.assertEqual(data['question']['category'], quiz_category)
+		self.assertEqual(res.status_code, 200)
+		self.assertTrue(data['success'])
+		self.assertEqual(data['movie']['title'], movie.title)
+		self.assertEqual(data['movie']['release'], movie_data_patch['release'])
 
-	#     requested_question = Question.query.get(data['question']['id'])
-	#     self.assertEqual(data['question']['category'], requested_question.category)
+		movie_updated = Movie.query.get(data['movie']['id'])
+		self.assertEqual(movie_updated.id, movie.id)
 
-	# def test_should_not_return_previous_questions_passed(self):
-	#     quiz_category = 4
-	#     previous_questions_query = Question.query.filter_by(category=quiz_category).all()
-	#     previous_questions = []
+	def test_should_not_update_existing_movie_if_not_found(self):
+		movie_data_patch = {
+			'title': 'Foo'
+		} 
 
-	#     for question in previous_questions_query:
-	#         previous_questions.append(question.id)
+		res = self.client().patch('/movies/9999', data=json.dumps(movie_data_patch), headers={'Content-Type': 'application/json'})
+		data = json.loads(res.data)
 
-	#     last_question = previous_questions.pop()
+		self.assertEqual(res.status_code, 404)
+		self.assertEqual(data['error'], 404)
+		self.assertFalse(data['success'])
 
-	#     quizzes_request_data = {
-	#         "category": quiz_category,
-	#         "previous_questions": previous_questions
-	#     }
+	def test_should_delete_existing_movie(self):
+		movie = Movie(title="Invisible Man", release="March 20, 2020")
+		movie.insert()
 
-	#     res = self.client().post('/quizzes', data=json.dumps(quizzes_request_data), headers={'Content-Type': 'application/json'})
-	#     data = json.loads(res.data)
+		res = self.client().delete(f'/movies/%s' % movie.id)
+		data = json.loads(res.data)
 
-	#     self.assertEqual(res.status_code, 200)
-	#     self.assertTrue(data['success'])
+		self.assertEqual(res.status_code, 200)
+		self.assertTrue(data['success'])
+		self.assertEqual(data['movie_id'], movie.id)
 
-	#     requested_question = Question.query.get(data['question']['id'])
-	#     self.assertEqual(data['question']['id'], last_question)
+	def test_should_not_delete_existing_movie_if_not_found(self):
+		res = self.client().delete('/movies/9999')
+		data = json.loads(res.data)
 
-	# def test_should_not_return_any_more_questions(self):
-	#     quiz_category = 4
-	#     previous_questions_query = Question.query.filter_by(category=quiz_category).all()
-	#     previous_questions = []
-
-	#     for question in previous_questions_query:
-	#         previous_questions.append(question.id)
-
-	#     quizzes_request_data = {
-	#         "category": quiz_category,
-	#         "previous_questions": previous_questions
-	#     }
-
-	#     res = self.client().post('/quizzes', data=json.dumps(quizzes_request_data), headers={'Content-Type': 'application/json'})
-	#     data = json.loads(res.data)
-
-	#     self.assertEqual(res.status_code, 404)
-	#     self.assertTrue(data['error'], 404)
-	#     self.assertFalse(data['success'])
+		self.assertEqual(res.status_code, 404)
+		self.assertEqual(data['error'], 404)
+		self.assertFalse(data['success'])
 
 # Make the tests conveniently executable
 if __name__ == "__main__":

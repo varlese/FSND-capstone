@@ -1,6 +1,7 @@
 #----------------------------------------------------------------------------#
 # Imports
 #----------------------------------------------------------------------------#
+import os
 
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -9,9 +10,12 @@ from flask_moment import Moment
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
+database_url = os.environ.get('DATABASE_URL')
+if not database_url:
+	database_url = 'localhost'
 
 database_name = "agency"
-database_path = "postgres://{}/{}".format('localhost:5432', database_name)
+database_path = "postgres://{}:{}/{}".format(database_url, '5432', database_name)
 
 db = SQLAlchemy()
 moment = Moment()
@@ -29,29 +33,6 @@ def setup_db(app, database_path=database_path):
 #----------------------------------------------------------------------------#
 # Models.
 #----------------------------------------------------------------------------#
-
-# Placeholder for future database that potentially connects actors to movies (based on Genre database from prior project)
-
-# class Genre(db.Model):
-#   __tablename__ = 'Genre'
-
-#   id = db.Column(db.Integer, primary_key = True)
-#   name = db.Column(db.String(), nullable = False)
-#   slug = db.Column(db.String(), unique = True, nullable = False)
-
-# # Creating relationship to connect Genre categories to Venue table
-# venue_genre_relationship = db.Table('venue_genre_relationship',
-#     db.Column('genre_id', db.Integer, db.ForeignKey('Genre.id')),
-#     db.Column('venue_id', db.Integer, db.ForeignKey('Venue.id', ondelete = 'cascade')),
-#     db.Column('id', db.Integer, primary_key = True)
-# )
-
-# # Creating relationship to connect Genre categories to Artist table
-# artist_genre_relationship = db.Table('artist_genre_relationship',
-#     db.Column('genre_id', db.Integer, db.ForeignKey('Genre.id')),
-#     db.Column('artist_id', db.Integer, db.ForeignKey('Artist.id', ondelete = 'cascade')),
-#     db.Column('id', db.Integer, primary_key = True)
-# )
 
 # Creating the debatase for Actors
 

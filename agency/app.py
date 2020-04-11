@@ -147,7 +147,7 @@ def create_app(test_config=None):
 		data = request.get_json()
 
 		if 'title' in data and data['title']:
-			movie.name = data['title']
+			movie.title = data['title']
 
 		if 'release' in data and data['release']:
 			movie.release = data['release']

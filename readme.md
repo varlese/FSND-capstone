@@ -7,7 +7,9 @@ The Casting Agency API supports a basic castic agency by allowing users to query
 
 # Running the API [TODO]
 
-To run the server [add Heroku details here]
+API endpoints can be accessed via https://capstone-fsnd-varlese.herokuapp.com/
+
+Auth0 information for endpoints that require authentication can be found in `setup.sh`.
 
 # Running tests
 

@@ -4,17 +4,18 @@ from functools import wraps
 from jose import jwt
 from urllib.request import urlopen
 
-## -------------------------------------
-## Utils
-## -------------------------------------
+# ---------------------------------------------------------
+# Utils
+# ---------------------------------------------------------
 
 AUTH0_DOMAIN = 'dev-j30osbgf.auth0.com'
 ALGORITHMS = ['RS256']
 API_AUDIENCE = 'agency_dev'
 JWKS_URL = f'https://{AUTH0_DOMAIN}/.well-known/jwks.json'
 
+
 # Gets JSON data from URL
-# Source: https://www.datasciencelearner.com/how-to-get-json-data-from-url-in-python/ 
+# Source: https://bit.ly/3cbBd5y
 def get_json_data(url):
     operUrl = urlopen(url)
     if(operUrl.getcode() != 200):
@@ -24,9 +25,10 @@ def get_json_data(url):
     jsonData = json.loads(data)
     return jsonData
 
-## -------------------------------------
-## Authorization 
-## -------------------------------------
+# ---------------------------------------------------------
+# Authorization
+# ---------------------------------------------------------
+
 
 # Handles authentication errors to raise exceptions.
 # Returns: dictionary with error message and description.
@@ -34,6 +36,7 @@ class AuthError(Exception):
     def __init__(self, error, status_code):
         self.error = error
         self.status_code = status_code
+
 
 # Gets auth header.
 # Returns: split_auth_header (string)
@@ -68,6 +71,7 @@ def get_token_auth_header():
 
     return split_auth_header[1]
 
+
 # Checks permission against the payload coming from Auth0.
 # For more: verify_decode_jwt()
 # Accepts: permission (string) and payload (dictionary).
@@ -84,13 +88,14 @@ def check_permissions(permission, payload):
             'code': 'forbidden',
             'description': 'Request is forbidden.'
         }, 403)
-    
+
     return True
+
 
 # Fetches JSON web key set from Auth0
 # Accepts: token (string)
 # Returns: rsa_key (dictionary)
-# Link: https://auth0.com/docs/tokens/concepts/jwks 
+# Link: https://auth0.com/docs/tokens/concepts/jwks
 def get_rsa_key(token):
     jwks_data = get_json_data(JWKS_URL)
 
@@ -127,6 +132,7 @@ def get_rsa_key(token):
 
     return rsa_key
 
+
 # Verification and decoding of JWT.
 # Receives: token (string)
 # Returns: payload (dictionary)
@@ -137,9 +143,9 @@ def verify_decode_jwt(token):
         payload = jwt.decode(
             token,
             rsa_key,
-            algorithms = ALGORITHMS,
-            audience = API_AUDIENCE,
-            issuer = f'https://{AUTH0_DOMAIN}/'
+            algorithms=ALGORITHMS,
+            audience=API_AUDIENCE,
+            issuer=f'https://{AUTH0_DOMAIN}/'
         )
         return payload
 
@@ -152,7 +158,7 @@ def verify_decode_jwt(token):
     except Exception:
         raise AuthError({
             'code': 'invalid_token',
-             'description': 'Token is invalid.'
+            'description': 'Token is invalid.'
         }, 422)
 
     except jwt.JWTClaimsError:
@@ -160,6 +166,7 @@ def verify_decode_jwt(token):
             'code': 'invalid_decode',
             'description': 'Invalid decode configuration.'
         }, 422)
+
 
 # Decorator to check permissions and authentication on endpoints.
 def requires_auth(permission=''):

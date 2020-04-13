@@ -7,7 +7,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 # Enable debug mode.
 DEBUG = True
 
-#Turn off track modifications warning
+# Turn off track modifications warning
 SQLALCHEMY_TRACK_MODIFICATIONS = True
 
 # Connect to the database

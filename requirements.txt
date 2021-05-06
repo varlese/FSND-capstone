@@ -1,6 +1,6 @@
 Click==7.0
 Flask==1.0.3
-Flask-Cors==3.0.7
+Flask-Cors==3.0.9
 Flask-RESTful==0.3.7
 Flask-SQLAlchemy==2.4.0
 Jinja2==2.10.1
